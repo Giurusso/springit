@@ -19,50 +19,17 @@ public class SpringitApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SpringitApplication.class, args);
-//        System.out.println("This is my merge test ! ");
-//        System.out.println("Welcome to Springit !");
     }
 
     @Bean
     @Profile("dev")
     CommandLineRunner commandLineRunner(){
         return args -> {
-            log.error("Allanem e kivemmuort ! ");
+            log.error("Tacciii ! ");
             log.warn("Lote !!!!!!!! ");
             log.info("This is My log");
             log.debug("I m the king ");
             log.trace("A che cazzo serve ? ");
         };
     }
-
-//    @Bean
-//    @Profile("dev")
-//    CommandLineRunner runner(){
-//        return args -> {
-//            System.out.println("Welcome Message: " + springitProperties.getWelkomeMsg());
-//        };
-//    }
-//
-//    @Bean
-//    @Profile("dev")
-//    CommandLineRunner runner2() {
-//        return args -> {
-//            System.out.println("This is somethink that we do only in dev ");
-//        };
-//    }
-
-//    @Bean
-//    @Profile("dev")
-//    CommandLineRunner runner3() {
-//        return args -> {
-//            System.out.println("Printing all the bean names in the application context. ");
-//            System.out.println("--------------------------------------------------------");
-//            String[] beans=applicationContext.getBeanDefinitionNames();
-//            Stream<String> collection = Arrays.stream(beans);
-//            collection.sorted().forEach(s -> System.out.println(s));
-//
-//
-//        };
-//    }
-
 }
