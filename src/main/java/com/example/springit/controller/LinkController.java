@@ -1,9 +1,12 @@
 package com.example.springit.controller;
 
+import com.example.springit.domain.Comment;
 import com.example.springit.domain.Link;
+import com.example.springit.repository.CommentRepository;
 import com.example.springit.repository.LinkRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,8 +23,11 @@ public class LinkController {
 
     private LinkRepository linkRepository;
 
-    public LinkController(LinkRepository linkRepository) {
+    private CommentRepository commentRepository;
+
+    public LinkController(LinkRepository linkRepository, CommentRepository commentRepository) {
         this.linkRepository = linkRepository;
+        this.commentRepository = commentRepository;
     }
 
     @GetMapping("/")
@@ -31,10 +37,14 @@ public class LinkController {
     }
 
     @GetMapping("/link/{id}")
-    public String read(@PathVariable Long id,Model model) {
+    public String read(@PathVariable Long id, Model model) {
         Optional<Link> link = linkRepository.findById(id);
-        if( link.isPresent() ) {
-            model.addAttribute("link",link.get());
+        if (link.isPresent()) {
+            Link currentLink = link.get();
+            model.addAttribute("link", currentLink);
+            Comment comment = new Comment();
+            comment.setLink(currentLink);
+            model.addAttribute("comment", comment);
             model.addAttribute("success", model.containsAttribute("success"));
             return "link/view";
         } else {
@@ -43,7 +53,7 @@ public class LinkController {
     }
 
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable Long id){
+    public String delete(@PathVariable Long id) {
         logger.info("I will delete somethink " + id);
         linkRepository.deleteById(id);
         return "redirect:/";
@@ -51,24 +61,35 @@ public class LinkController {
 
     @GetMapping("/link/submit")
     public String newLinkForm(Model model) {
-        model.addAttribute("link",new Link());
+        model.addAttribute("link", new Link());
         return "link/submit";
     }
 
     @PostMapping("/link/submit")
     public String createLink(@Valid Link link, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-        if (bindingResult.hasErrors()){
+        if (bindingResult.hasErrors()) {
             logger.info("Validation finding during saving link. ");
-            model.addAttribute("link",link);
+            model.addAttribute("link", link);
             return "link/submit";
-        }else{
+        } else {
             //save the link
             linkRepository.save(link);
             logger.info("New link saved successfully");
-            redirectAttributes.addAttribute("id",link.getId()).addFlashAttribute("success",true);
+            redirectAttributes.addAttribute("id", link.getId()).addFlashAttribute("success", true);
             return "redirect:/link/{id}";
         }
 
+    }
+    @Secured({"ROLE_USER"})
+    @PostMapping("/link/comments")
+    public String addComment(@Valid Comment comment, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            logger.info("There was problem adding a new comment.");
+        } else {
+            commentRepository.save(comment);
+            logger.info("The comment has been saved successfully.");
+        }
+        return "redirect:/link/" + comment.getLink().getId();
     }
 
 }
