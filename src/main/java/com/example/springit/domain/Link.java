@@ -36,13 +36,24 @@ public class Link extends Auditable {
     @URL(message = "Please put a valid link")
     private String url;
 
-    // comment
+       // comment
     @OneToMany(mappedBy = "link")
     private List<Comment> comments = new ArrayList<>();
+
+    // vote
+    @OneToMany(mappedBy = "link")
+    private List<Vote> votes = new ArrayList<>();
+
+    private int voteCount = 0;
 
     public void addComment(Comment comment){
         comments.add(comment);
     }
+
+    public void addVote(Vote vote){
+        votes.add(vote);
+    }
+
     public String getDomainName() throws URISyntaxException {
         URI uri = new URI(this.url);
         String domain = uri.getHost();
