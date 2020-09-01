@@ -3,14 +3,16 @@ package com.example.springit.controller;
 import com.example.springit.domain.Comment;
 import com.example.springit.domain.Link;
 import com.example.springit.repository.CommentRepository;
-import com.example.springit.repository.LinkRepository;
+import com.example.springit.service.LinkService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
@@ -21,24 +23,24 @@ public class LinkController {
 
     private static final Logger logger = LoggerFactory.getLogger(LinkController.class);
 
-    private LinkRepository linkRepository;
-
     private CommentRepository commentRepository;
 
-    public LinkController(LinkRepository linkRepository, CommentRepository commentRepository) {
-        this.linkRepository = linkRepository;
+    private LinkService linkService;
+
+    public LinkController(CommentRepository commentRepository,LinkService linkService) {
+        this.linkService = linkService;
         this.commentRepository = commentRepository;
     }
 
     @GetMapping("/")
     public String list(Model model) {
-        model.addAttribute("links", linkRepository.findAll());
+        model.addAttribute("links", linkService.findAll());
         return "link/list";
     }
 
     @GetMapping("/link/{id}")
     public String read(@PathVariable Long id, Model model) {
-        Optional<Link> link = linkRepository.findById(id);
+        Optional<Link> link = linkService.findById(id);
         if (link.isPresent()) {
             Link currentLink = link.get();
             model.addAttribute("link", currentLink);
@@ -55,7 +57,7 @@ public class LinkController {
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable Long id) {
         logger.info("I will delete somethink " + id);
-        linkRepository.deleteById(id);
+        linkService.deleteById(id);
         return "redirect:/";
     }
 
@@ -73,7 +75,7 @@ public class LinkController {
             return "link/submit";
         } else {
             //save the link
-            linkRepository.save(link);
+            linkService.save(link);
             logger.info("New link saved successfully");
             redirectAttributes.addAttribute("id", link.getId()).addFlashAttribute("success", true);
             return "redirect:/link/{id}";
